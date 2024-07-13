@@ -38,6 +38,7 @@ func (c *Client) CreateCompletionStream(
 	if err != nil {
 		return nil, err
 	}
+	defer req.Body.Close()
 
 	resp, err := sendRequestStream[CompletionResponse](c, req)
 	if err != nil {
