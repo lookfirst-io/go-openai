@@ -14,7 +14,7 @@ import (
 	"github.com/lookfirst-io/go-openai/internal/test/checks"
 )
 
-//func TestCompletionsStreamWrongModel(t *testing.T) {
+// func TestCompletionsStreamWrongModel(t *testing.T) {
 //	config := openai.DefaultConfig("whatever")
 //	config.BaseURL = "http://localhost/v1"
 //	client := openai.NewClientWithConfig(config)
@@ -29,7 +29,7 @@ import (
 //	if !errors.Is(err, openai.ErrCompletionUnsupportedModel) {
 //		t.Fatalf("CreateCompletion should return ErrCompletionUnsupportedModel, but returned: %v", err)
 //	}
-//}
+// }
 
 func TestCreateCompletionStream(t *testing.T) {
 	client, server, teardown := setupOpenAITestServer()
