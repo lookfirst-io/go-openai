@@ -2,4 +2,6 @@ module github.com/lookfirst-io/go-openai
 
 go 1.18
 
-require github.com/sashabaranov/go-openai v1.40.5 // indirect
+replace github.com/sashabaranov/go-openai => .
+
+require github.com/sashabaranov/go-openai v0.0.0-00010101000000-000000000000

@@ -11,9 +11,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	utils "github.com/sashabaranov/go-openai/internal"
-	"github.com/sashabaranov/go-openai/internal/test"
-	"github.com/sashabaranov/go-openai/internal/test/checks"
+	utils "github.com/lookfirst-io/go-openai/internal"
+	"github.com/lookfirst-io/go-openai/internal/test"
+	"github.com/lookfirst-io/go-openai/internal/test/checks"
 )
 
 func TestAudioWithFailingFormBuilder(t *testing.T) {

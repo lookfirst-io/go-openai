@@ -12,7 +12,7 @@ import (
 
 	"github.com/lookfirst-io/go-openai"
 	"github.com/lookfirst-io/go-openai/internal/test/checks"
-	"github.com/lookfirst-io/go-openai/jsonschema"
+	"github.com/sashabaranov/go-openai/jsonschema"
 )
 
 func TestAPI(t *testing.T) {
