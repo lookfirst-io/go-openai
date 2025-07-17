@@ -226,7 +226,7 @@ type CompletionRequest struct {
 
 	// Whether to include reasoning in the response for OpenRouter
 	IncludeReasoning bool `json:"include_reasoning,omitempty"`
-	
+
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 }
 
