@@ -315,19 +315,36 @@ type ChatCompletionRequest struct {
 
 	Provider *PostOpenrouterProviderRequest `json:"provider,omitempty"`
 
-	IncludeReasoning bool                            `json:"include_reasoning,omitempty"` // Whether to include reasoning in the response for OpenRouter
-	Reasoning        *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
+	// Whether to include reasoning in the response for OpenRouter
+	IncludeReasoning bool `json:"include_reasoning,omitempty"`
+
+	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 }
 
 type PostOpenrouterProviderRequest struct {
-	Sort              string   `json:"sort,omitempty"`               // Sort providers by price or throughput. (e.g. "price" or "throughput")
-	Quantizations     []string `json:"quantizations,omitempty"`      // List of quantization levels to filter by (e.g. ["int4", "int8"])
-	Ignore            []string `json:"ignore,omitempty"`             // List of provider names to skip for this request.
-	DataCollection    string   `json:"data_collection,omitempty"`    // Control whether to use providers that may store data. "deny" or "allow"
-	RequireParameters bool     `json:"require_parameters,omitempty"` // Only use providers that support all parameters in your request.
-	AllowFallbacks    bool     `json:"allow_fallbacks,omitempty"`    // Whether to allow backup providers when the primary is unavailable.
-	Order             []string `json:"order,omitempty"`              // List of provider names to try in order
-	Only              []string `json:"only,omitempty"`               // List of provider slugs to allow for this request.
+	// Sort providers by price or throughput. (e.g. "price" or "throughput")
+	Sort string `json:"sort,omitempty"`
+
+	// List of quantization levels to filter by (e.g. ["int4", "int8"])
+	Quantizations []string `json:"quantizations,omitempty"`
+
+	// List of provider names to skip for this request.
+	Ignore []string `json:"ignore,omitempty"`
+
+	// Control whether to use providers that may store data. "deny" or "allow"
+	DataCollection string `json:"data_collection,omitempty"`
+
+	// Only use providers that support all parameters in your request.
+	RequireParameters bool `json:"require_parameters,omitempty"`
+
+	// Whether to allow backup providers when the primary is unavailable.
+	AllowFallbacks bool `json:"allow_fallbacks,omitempty"`
+
+	// List of provider names to try in order
+	Order []string `json:"order,omitempty"`
+
+	// List of provider slugs to allow for this request.
+	Only []string `json:"only,omitempty"`
 }
 
 // context : https://openrouter.ai/docs/use-cases/reasoning-tokens
