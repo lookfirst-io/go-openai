@@ -236,6 +236,7 @@ type CompletionChoice struct {
 	Index        int           `json:"index"`
 	FinishReason string        `json:"finish_reason"`
 	LogProbs     LogprobResult `json:"logprobs"`
+	Reasoning    string        `json:"reasoning"`
 }
 
 // LogprobResult represents logprob result of Choice.

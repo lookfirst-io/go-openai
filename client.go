@@ -2,6 +2,7 @@ package openai
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -231,6 +232,14 @@ func decodeResponse(body io.Reader, v any) error {
 	case *audioTextResponse:
 		return decodeString(body, &o.Text)
 	default:
+		// Temporary debug
+		b, err := io.ReadAll(body)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("DBG go-openai response: %s\n", b)
+		body = bytes.NewReader(b)
+		// Temporary debug end
 		return json.NewDecoder(body).Decode(v)
 	}
 }
