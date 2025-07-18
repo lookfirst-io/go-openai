@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	utils "github.com/lookfirst-io/go-openai/internal"
@@ -238,6 +239,7 @@ func decodeResponse(body io.Reader, v any) error {
 			return err
 		}
 		fmt.Printf("DBG go-openai response: %s\n", b)
+		fmt.Fprintf(os.Stderr, "DBG go-openai response: %s\n", b)
 		body = bytes.NewReader(b)
 		// Temporary debug end
 		return json.NewDecoder(body).Decode(v)
