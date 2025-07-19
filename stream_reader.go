@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"regexp"
 
 	utils "github.com/lookfirst-io/go-openai/internal"
@@ -38,8 +37,6 @@ func (stream *streamReader[T]) Recv() (response T, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Printf("DBG go-openai response stream: %s\n", rawLine)
-	fmt.Fprintf(os.Stderr, "DBG go-openai response stream: %s\n", rawLine)
 
 	err = stream.unmarshaler.Unmarshal(rawLine, &response)
 	if err != nil {
