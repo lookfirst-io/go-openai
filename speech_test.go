@@ -21,10 +21,8 @@ func TestSpeechIntegration(t *testing.T) {
 	defer teardown()
 
 	server.RegisterHandler("/v1/audio/speech", func(w http.ResponseWriter, r *http.Request) {
-		dir, cleanup := test.CreateTestDirectory(t)
-		path := filepath.Join(dir, "fake.mp3")
+		path := filepath.Join(t.TempDir(), "fake.mp3")
 		test.CreateTestFile(t, path)
-		defer cleanup()
 
 		// audio endpoints only accept POST requests
 		if r.Method != "POST" {
@@ -94,22 +92,5 @@ func TestSpeechIntegration(t *testing.T) {
 		// save buf to file as mp3
 		err = os.WriteFile("test.mp3", buf, 0644)
 		checks.NoError(t, err, "Create error")
-	})
-	t.Run("invalid model", func(t *testing.T) {
-		_, err := client.CreateSpeech(context.Background(), openai.CreateSpeechRequest{
-			Model: "invalid_model",
-			Input: "Hello!",
-			Voice: openai.VoiceAlloy,
-		})
-		checks.ErrorIs(t, err, openai.ErrInvalidSpeechModel, "CreateSpeech error")
-	})
-
-	t.Run("invalid voice", func(t *testing.T) {
-		_, err := client.CreateSpeech(context.Background(), openai.CreateSpeechRequest{
-			Model: openai.TTSModel1,
-			Input: "Hello!",
-			Voice: "invalid_voice",
-		})
-		checks.ErrorIs(t, err, openai.ErrInvalidVoice, "CreateSpeech error")
 	})
 }

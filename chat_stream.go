@@ -10,13 +10,41 @@ type ChatCompletionStreamChoiceDelta struct {
 	Role         string        `json:"role,omitempty"`
 	FunctionCall *FunctionCall `json:"function_call,omitempty"`
 	ToolCalls    []ToolCall    `json:"tool_calls,omitempty"`
+	Refusal      string        `json:"refusal,omitempty"`
+
+	// This property is used for the "reasoning" feature supported by deepseek-reasoner
+	// which is not in the official documentation.
+	// the doc from deepseek:
+	// - https://api-docs.deepseek.com/api/create-chat-completion#responses
+	ReasoningContent string `json:"reasoning_content,omitempty"`
+	// Openrouter style reasoning
+	Reasoning string `json:"reasoning,omitempty"`
+}
+
+type ChatCompletionStreamChoiceLogprobs struct {
+	Content []ChatCompletionTokenLogprob `json:"content,omitempty"`
+	Refusal []ChatCompletionTokenLogprob `json:"refusal,omitempty"`
+}
+
+type ChatCompletionTokenLogprob struct {
+	Token       string                                 `json:"token"`
+	Bytes       []int64                                `json:"bytes,omitempty"`
+	Logprob     float64                                `json:"logprob,omitempty"`
+	TopLogprobs []ChatCompletionTokenLogprobTopLogprob `json:"top_logprobs"`
+}
+
+type ChatCompletionTokenLogprobTopLogprob struct {
+	Token   string  `json:"token"`
+	Bytes   []int64 `json:"bytes"`
+	Logprob float64 `json:"logprob"`
 }
 
 type ChatCompletionStreamChoice struct {
-	Index                int                             `json:"index"`
-	Delta                ChatCompletionStreamChoiceDelta `json:"delta"`
-	FinishReason         FinishReason                    `json:"finish_reason"`
-	ContentFilterResults ContentFilterResults            `json:"content_filter_results,omitempty"`
+	Index                int                                 `json:"index"`
+	Delta                ChatCompletionStreamChoiceDelta     `json:"delta"`
+	Logprobs             *ChatCompletionStreamChoiceLogprobs `json:"logprobs,omitempty"`
+	FinishReason         FinishReason                        `json:"finish_reason"`
+	ContentFilterResults ContentFilterResults                `json:"content_filter_results,omitempty"`
 }
 
 type PromptFilterResult struct {
@@ -62,7 +90,17 @@ func (c *Client) CreateChatCompletionStream(
 	}
 
 	request.Stream = true
-	req, err := c.newRequest(ctx, http.MethodPost, c.fullURL(urlSuffix, request.Model), withBody(request))
+	reasoningValidator := NewReasoningValidator()
+	if err = reasoningValidator.Validate(request); err != nil {
+		return
+	}
+
+	req, err := c.newRequest(
+		ctx,
+		http.MethodPost,
+		c.fullURL(urlSuffix, withModel(request.Model)),
+		withBody(request),
+	)
 	if err != nil {
 		return nil, err
 	}

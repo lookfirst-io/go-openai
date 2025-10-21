@@ -11,6 +11,8 @@ const (
 
 	azureAPIPrefix         = "openai"
 	azureDeploymentsPrefix = "deployments"
+
+	AnthropicAPIVersion = "2023-06-01"
 )
 
 type APIType string
@@ -20,11 +22,16 @@ const (
 	APITypeAzure           APIType = "AZURE"
 	APITypeAzureAD         APIType = "AZURE_AD"
 	APITypeCloudflareAzure APIType = "CLOUDFLARE_AZURE"
+	APITypeAnthropic       APIType = "ANTHROPIC"
 )
 
 const AzureAPIKeyHeader = "api-key"
 
-const defaultAssistantVersion = "v1" // This will be deprecated by the end of 2024.
+const defaultAssistantVersion = "v2" // upgrade to v2 to support vector store
+
+type HTTPDoer interface {
+	Do(req *http.Request) (*http.Response, error)
+}
 
 // ClientConfig is a configuration of a client.
 type ClientConfig struct {
@@ -33,10 +40,10 @@ type ClientConfig struct {
 	BaseURL              string
 	OrgID                string
 	APIType              APIType
-	APIVersion           string // required when APIType is APITypeAzure or APITypeAzureAD
+	APIVersion           string // required when APIType is APITypeAzure or APITypeAzureAD or APITypeAnthropic
 	AssistantVersion     string
 	AzureModelMapperFunc func(model string) string // replace model to azure deployment name func
-	HTTPClient           *http.Client
+	HTTPClient           HTTPDoer
 
 	EmptyMessagesLimit uint
 }
@@ -65,6 +72,23 @@ func DefaultAzureConfig(apiKey, baseURL string) ClientConfig {
 		AzureModelMapperFunc: func(model string) string {
 			return regexp.MustCompile(`[.:]`).ReplaceAllString(model, "")
 		},
+
+		HTTPClient: &http.Client{},
+
+		EmptyMessagesLimit: defaultEmptyMessagesLimit,
+	}
+}
+
+func DefaultAnthropicConfig(apiKey, baseURL string) ClientConfig {
+	if baseURL == "" {
+		baseURL = "https://api.anthropic.com/v1"
+	}
+	return ClientConfig{
+		authToken:  apiKey,
+		BaseURL:    baseURL,
+		OrgID:      "",
+		APIType:    APITypeAnthropic,
+		APIVersion: AnthropicAPIVersion,
 
 		HTTPClient: &http.Client{},
 

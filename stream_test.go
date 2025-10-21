@@ -14,22 +14,22 @@ import (
 	"github.com/lookfirst-io/go-openai/internal/test/checks"
 )
 
-func TestCompletionsStreamWrongModel(t *testing.T) {
-	config := openai.DefaultConfig("whatever")
-	config.BaseURL = "http://localhost/v1"
-	client := openai.NewClientWithConfig(config)
-
-	_, err := client.CreateCompletionStream(
-		context.Background(),
-		openai.CompletionRequest{
-			MaxTokens: 5,
-			Model:     openai.GPT3Dot5Turbo,
-		},
-	)
-	if !errors.Is(err, openai.ErrCompletionUnsupportedModel) {
-		t.Fatalf("CreateCompletion should return ErrCompletionUnsupportedModel, but returned: %v", err)
-	}
-}
+// func TestCompletionsStreamWrongModel(t *testing.T) {
+//	config := openai.DefaultConfig("whatever")
+//	config.BaseURL = "http://localhost/v1"
+//	client := openai.NewClientWithConfig(config)
+//
+//	_, err := client.CreateCompletionStream(
+//		context.Background(),
+//		openai.CompletionRequest{
+//			MaxTokens: 5,
+//			Model:     openai.GPT3Dot5Turbo,
+//		},
+//	)
+//	if !errors.Is(err, openai.ErrCompletionUnsupportedModel) {
+//		t.Fatalf("CreateCompletion should return ErrCompletionUnsupportedModel, but returned: %v", err)
+//	}
+// }
 
 func TestCreateCompletionStream(t *testing.T) {
 	client, server, teardown := setupOpenAITestServer()
@@ -169,7 +169,7 @@ func TestCreateCompletionStreamRateLimitError(t *testing.T) {
 	var apiErr *openai.APIError
 	_, err := client.CreateCompletionStream(context.Background(), openai.CompletionRequest{
 		MaxTokens: 5,
-		Model:     openai.GPT3Ada,
+		Model:     openai.GPT3Babbage002,
 		Prompt:    "Hello!",
 		Stream:    true,
 	})

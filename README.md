@@ -1,19 +1,19 @@
 # Go OpenAI
-[![Go Reference](https://pkg.go.dev/badge/github.com/lookfirst-io/go-openai.svg)](https://pkg.go.dev/github.com/lookfirst-io/go-openai)
-[![Go Report Card](https://goreportcard.com/badge/github.com/lookfirst-io/go-openai)](https://goreportcard.com/report/github.com/lookfirst-io/go-openai)
+[![Go Reference](https://pkg.go.dev/badge/github.com/sashabaranov/go-openai.svg)](https://pkg.go.dev/github.com/sashabaranov/go-openai)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sashabaranov/go-openai)](https://goreportcard.com/report/github.com/sashabaranov/go-openai)
 [![codecov](https://codecov.io/gh/lookfirst-io/go-openai/branch/master/graph/badge.svg?token=bCbIfHLIsW)](https://codecov.io/gh/lookfirst-io/go-openai)
 
 This library provides unofficial Go clients for [OpenAI API](https://platform.openai.com/). We support: 
 
-* ChatGPT
+* ChatGPT 4o, o1
 * GPT-3, GPT-4
-* DALL·E 2
+* DALL·E 2, DALL·E 3, GPT Image 1
 * Whisper
 
 ## Installation
 
 ```
-go get github.com/lookfirst-io/go-openai
+go get github.com/sashabaranov/go-openai
 ```
 Currently, go-openai requires Go version 1.18 or greater.
 
@@ -28,7 +28,7 @@ package main
 import (
 	"context"
 	"fmt"
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -80,7 +80,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -133,7 +133,7 @@ package main
 import (
 	"context"
 	"fmt"
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -141,7 +141,7 @@ func main() {
 	ctx := context.Background()
 
 	req := openai.CompletionRequest{
-		Model:     openai.GPT3Ada,
+		Model:     openai.GPT3Babbage002,
 		MaxTokens: 5,
 		Prompt:    "Lorem ipsum",
 	}
@@ -166,7 +166,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -174,7 +174,7 @@ func main() {
 	ctx := context.Background()
 
 	req := openai.CompletionRequest{
-		Model:     openai.GPT3Ada,
+		Model:     openai.GPT3Babbage002,
 		MaxTokens: 5,
 		Prompt:    "Lorem ipsum",
 		Stream:    true,
@@ -215,7 +215,7 @@ import (
 	"context"
 	"fmt"
 
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -247,7 +247,7 @@ import (
 	"fmt"
 	"os"
 
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -288,7 +288,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 	"image/png"
 	"os"
 )
@@ -358,6 +358,66 @@ func main() {
 </details>
 
 <details>
+<summary>GPT Image 1 image generation</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"encoding/base64"
+	"fmt"
+	"os"
+
+	openai "github.com/sashabaranov/go-openai"
+)
+
+func main() {
+	c := openai.NewClient("your token")
+	ctx := context.Background()
+
+	req := openai.ImageRequest{
+		Prompt:            "Parrot on a skateboard performing a trick. Large bold text \"SKATE MASTER\" banner at the bottom of the image. Cartoon style, natural light, high detail, 1:1 aspect ratio.",
+		Background:        openai.CreateImageBackgroundOpaque,
+		Model:             openai.CreateImageModelGptImage1,
+		Size:              openai.CreateImageSize1024x1024,
+		N:                 1,
+		Quality:           openai.CreateImageQualityLow,
+		OutputCompression: 100,
+		OutputFormat:      openai.CreateImageOutputFormatJPEG,
+		// Moderation: 		 openai.CreateImageModerationLow,
+		// User: 					 "",
+	}
+
+	resp, err := c.CreateImage(ctx, req)
+	if err != nil {
+		fmt.Printf("Image creation Image generation with GPT Image 1error: %v\n", err)
+		return
+	}
+
+	fmt.Println("Image Base64:", resp.Data[0].B64JSON)
+
+	// Decode the base64 data
+	imgBytes, err := base64.StdEncoding.DecodeString(resp.Data[0].B64JSON)
+	if err != nil {
+		fmt.Printf("Base64 decode error: %v\n", err)
+		return
+	}
+
+	// Write image to file
+	outputPath := "generated_image.jpg"
+	err = os.WriteFile(outputPath, imgBytes, 0644)
+	if err != nil {
+		fmt.Printf("Failed to write image file: %v\n", err)
+		return
+	}
+
+	fmt.Printf("The image was saved as %s\n", outputPath)
+}
+```
+</details>
+
+<details>
 <summary>Configuring proxy</summary>
 
 ```go
@@ -376,7 +436,7 @@ config.HTTPClient = &http.Client{
 c := openai.NewClientWithConfig(config)
 ```
 
-See also: https://pkg.go.dev/github.com/lookfirst-io/go-openai#ClientConfig
+See also: https://pkg.go.dev/github.com/sashabaranov/go-openai#ClientConfig
 </details>
 
 <details>
@@ -392,7 +452,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/lookfirst-io/go-openai"
+	"github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -446,7 +506,7 @@ import (
 	"context"
 	"fmt"
 
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -492,7 +552,7 @@ package main
 import (
 	"context"
 	"log"
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 
 )
 
@@ -549,7 +609,7 @@ import (
 	"context"
 	"fmt"
 
-	openai "github.com/lookfirst-io/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -680,7 +740,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/lookfirst-io/go-openai"
+	"github.com/sashabaranov/go-openai"
 )
 
 func main() {
@@ -743,6 +803,70 @@ func main() {
 }
 ```
 </details>
+
+<details>
+<summary>Structured Outputs</summary>
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/sashabaranov/go-openai"
+	"github.com/sashabaranov/go-openai/jsonschema"
+)
+
+func main() {
+	client := openai.NewClient("your token")
+	ctx := context.Background()
+
+	type Result struct {
+		Steps []struct {
+			Explanation string `json:"explanation"`
+			Output      string `json:"output"`
+		} `json:"steps"`
+		FinalAnswer string `json:"final_answer"`
+	}
+	var result Result
+	schema, err := jsonschema.GenerateSchemaForType(result)
+	if err != nil {
+		log.Fatalf("GenerateSchemaForType error: %v", err)
+	}
+	resp, err := client.CreateChatCompletion(ctx, openai.ChatCompletionRequest{
+		Model: openai.GPT4oMini,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleSystem,
+				Content: "You are a helpful math tutor. Guide the user through the solution step by step.",
+			},
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "how can I solve 8x + 7 = -23",
+			},
+		},
+		ResponseFormat: &openai.ChatCompletionResponseFormat{
+			Type: openai.ChatCompletionResponseFormatTypeJSONSchema,
+			JSONSchema: &openai.ChatCompletionResponseFormatJSONSchema{
+				Name:   "math_reasoning",
+				Schema: schema,
+				Strict: true,
+			},
+		},
+	})
+	if err != nil {
+		log.Fatalf("CreateChatCompletion error: %v", err)
+	}
+	err = schema.Unmarshal(resp.Choices[0].Message.Content, &result)
+	if err != nil {
+		log.Fatalf("Unmarshal schema error: %v", err)
+	}
+	fmt.Println(result)
+}
+```
+</details>
 See the `examples/` folder for more.
 
 ## Frequently Asked Questions
@@ -764,7 +888,7 @@ Due to the factors mentioned above, different answers may be returned even for t
 By adopting these strategies, you can expect more consistent results.
 
 **Related Issues:**  
-[omitempty option of request struct will generate incorrect request when parameter is 0.](https://github.com/lookfirst-io/go-openai/issues/9)
+[omitempty option of request struct will generate incorrect request when parameter is 0.](https://github.com/sashabaranov/go-openai/issues/9)
 
 ### Does Go OpenAI provide a method to count tokens?
 
@@ -775,15 +899,15 @@ For counting tokens, you might find the following links helpful:
 - [How to count tokens with tiktoken](https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb)
 
 **Related Issues:**  
-[Is it possible to join the implementation of GPT3 Tokenizer](https://github.com/lookfirst-io/go-openai/issues/62)
+[Is it possible to join the implementation of GPT3 Tokenizer](https://github.com/sashabaranov/go-openai/issues/62)
 
 ## Contributing
 
-By following [Contributing Guidelines](https://github.com/lookfirst-io/go-openai/blob/master/CONTRIBUTING.md), we hope to ensure that your contributions are made smoothly and efficiently.
+By following [Contributing Guidelines](https://github.com/sashabaranov/go-openai/blob/master/CONTRIBUTING.md), we hope to ensure that your contributions are made smoothly and efficiently.
 
 ## Thank you
 
-We want to take a moment to express our deepest gratitude to the [contributors](https://github.com/lookfirst-io/go-openai/graphs/contributors) and sponsors of this project:
+We want to take a moment to express our deepest gratitude to the [contributors](https://github.com/sashabaranov/go-openai/graphs/contributors) and sponsors of this project:
 - [Carson Kahn](https://carsonkahn.com) of [Spindle AI](https://spindleai.com)
 
 To all of you: thank you. You've helped us achieve more than we ever imagined possible. Can't wait to see where we go next, together!
