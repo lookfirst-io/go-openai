@@ -94,6 +94,11 @@ type ChatMessagePart struct {
 	ImageURL *ChatMessageImageURL `json:"image_url,omitempty"`
 }
 
+type CacheControlConfig struct {
+	Type string `json:"type,omitempty"`
+	TTL  string `json:"ttl,omitempty"`
+}
+
 type ChatCompletionMessage struct {
 	Role         string `json:"role"`
 	Content      string `json:"content,omitempty"`
@@ -122,6 +127,9 @@ type ChatCompletionMessage struct {
 
 	// Openrouter style reasoning
 	Reasoning string `json:"reasoning,omitempty"`
+
+	// Cache Control
+	CacheControl *CacheControlConfig `json:"cache_control,omitempty"`
 }
 
 func (m ChatCompletionMessage) MarshalJSON() ([]byte, error) {
@@ -130,31 +138,33 @@ func (m ChatCompletionMessage) MarshalJSON() ([]byte, error) {
 	}
 	if len(m.MultiContent) > 0 {
 		msg := struct {
-			Role             string            `json:"role"`
-			Content          string            `json:"-"`
-			Refusal          string            `json:"refusal,omitempty"`
-			MultiContent     []ChatMessagePart `json:"content,omitempty"`
-			Name             string            `json:"name,omitempty"`
-			ReasoningContent string            `json:"reasoning_content,omitempty"`
-			FunctionCall     *FunctionCall     `json:"function_call,omitempty"`
-			ToolCalls        []ToolCall        `json:"tool_calls,omitempty"`
-			ToolCallID       string            `json:"tool_call_id,omitempty"`
-			Reasoning        string            `json:"reasoning,omitempty"`
+			Role             string              `json:"role"`
+			Content          string              `json:"-"`
+			Refusal          string              `json:"refusal,omitempty"`
+			MultiContent     []ChatMessagePart   `json:"content,omitempty"`
+			Name             string              `json:"name,omitempty"`
+			ReasoningContent string              `json:"reasoning_content,omitempty"`
+			FunctionCall     *FunctionCall       `json:"function_call,omitempty"`
+			ToolCalls        []ToolCall          `json:"tool_calls,omitempty"`
+			ToolCallID       string              `json:"tool_call_id,omitempty"`
+			Reasoning        string              `json:"reasoning,omitempty"`
+			CacheControl     *CacheControlConfig `json:"cache_control,omitempty"`
 		}(m)
 		return json.Marshal(msg)
 	}
 
 	msg := struct {
-		Role             string            `json:"role"`
-		Content          string            `json:"content,omitempty"`
-		Refusal          string            `json:"refusal,omitempty"`
-		MultiContent     []ChatMessagePart `json:"-"`
-		Name             string            `json:"name,omitempty"`
-		ReasoningContent string            `json:"reasoning_content,omitempty"`
-		FunctionCall     *FunctionCall     `json:"function_call,omitempty"`
-		ToolCalls        []ToolCall        `json:"tool_calls,omitempty"`
-		ToolCallID       string            `json:"tool_call_id,omitempty"`
-		Reasoning        string            `json:"reasoning,omitempty"`
+		Role             string              `json:"role"`
+		Content          string              `json:"content,omitempty"`
+		Refusal          string              `json:"refusal,omitempty"`
+		MultiContent     []ChatMessagePart   `json:"-"`
+		Name             string              `json:"name,omitempty"`
+		ReasoningContent string              `json:"reasoning_content,omitempty"`
+		FunctionCall     *FunctionCall       `json:"function_call,omitempty"`
+		ToolCalls        []ToolCall          `json:"tool_calls,omitempty"`
+		ToolCallID       string              `json:"tool_call_id,omitempty"`
+		Reasoning        string              `json:"reasoning,omitempty"`
+		CacheControl     *CacheControlConfig `json:"cache_control,omitempty"`
 	}(m)
 	return json.Marshal(msg)
 }
@@ -165,12 +175,13 @@ func (m *ChatCompletionMessage) UnmarshalJSON(bs []byte) error {
 		Content          string `json:"content"`
 		Refusal          string `json:"refusal,omitempty"`
 		MultiContent     []ChatMessagePart
-		Name             string        `json:"name,omitempty"`
-		ReasoningContent string        `json:"reasoning_content,omitempty"`
-		FunctionCall     *FunctionCall `json:"function_call,omitempty"`
-		ToolCalls        []ToolCall    `json:"tool_calls,omitempty"`
-		ToolCallID       string        `json:"tool_call_id,omitempty"`
-		Reasoning        string        `json:"reasoning,omitempty"`
+		Name             string              `json:"name,omitempty"`
+		ReasoningContent string              `json:"reasoning_content,omitempty"`
+		FunctionCall     *FunctionCall       `json:"function_call,omitempty"`
+		ToolCalls        []ToolCall          `json:"tool_calls,omitempty"`
+		ToolCallID       string              `json:"tool_call_id,omitempty"`
+		Reasoning        string              `json:"reasoning,omitempty"`
+		CacheControl     *CacheControlConfig `json:"cache_control,omitempty"`
 	}{}
 
 	if err := json.Unmarshal(bs, &msg); err == nil {
@@ -180,14 +191,15 @@ func (m *ChatCompletionMessage) UnmarshalJSON(bs []byte) error {
 	multiMsg := struct {
 		Role             string `json:"role"`
 		Content          string
-		Refusal          string            `json:"refusal,omitempty"`
-		MultiContent     []ChatMessagePart `json:"content"`
-		Name             string            `json:"name,omitempty"`
-		ReasoningContent string            `json:"reasoning_content,omitempty"`
-		FunctionCall     *FunctionCall     `json:"function_call,omitempty"`
-		ToolCalls        []ToolCall        `json:"tool_calls,omitempty"`
-		ToolCallID       string            `json:"tool_call_id,omitempty"`
-		Reasoning        string            `json:"reasoning,omitempty"`
+		Refusal          string              `json:"refusal,omitempty"`
+		MultiContent     []ChatMessagePart   `json:"content"`
+		Name             string              `json:"name,omitempty"`
+		ReasoningContent string              `json:"reasoning_content,omitempty"`
+		FunctionCall     *FunctionCall       `json:"function_call,omitempty"`
+		ToolCalls        []ToolCall          `json:"tool_calls,omitempty"`
+		ToolCallID       string              `json:"tool_call_id,omitempty"`
+		Reasoning        string              `json:"reasoning,omitempty"`
+		CacheControl     *CacheControlConfig `json:"cache_control,omitempty"`
 	}{}
 	if err := json.Unmarshal(bs, &multiMsg); err != nil {
 		return err
@@ -387,8 +399,9 @@ type Tool struct {
 }
 
 type ToolChoice struct {
-	Type     ToolType     `json:"type"`
-	Function ToolFunction `json:"function,omitempty"`
+	Type         ToolType            `json:"type"`
+	Function     ToolFunction        `json:"function,omitempty"`
+	CacheControl *CacheControlConfig `json:"cache_control,omitempty"`
 }
 
 type ToolFunction struct {
