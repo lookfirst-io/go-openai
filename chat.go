@@ -94,6 +94,8 @@ type ChatMessagePart struct {
 	ImageURL *ChatMessageImageURL `json:"image_url,omitempty"`
 }
 
+// Claude Cache Control Config
+// https://docs.claude.com/en/docs/build-with-claude/prompt-caching
 type CacheControlConfig struct {
 	Type string `json:"type,omitempty"`
 	TTL  string `json:"ttl,omitempty"`
@@ -338,6 +340,11 @@ type ChatCompletionRequest struct {
 	IncludeReasoning bool `json:"include_reasoning,omitempty"`
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
+
+	// OpenAI cache key
+	// OpenAI cache automatically and can be triggered with key (to make sure its only triggered from the same request)
+	// https://platform.openai.com/docs/api-reference/responses/create#responses-create-prompt_cache_key
+	PromptCacheKey string `json:"prompt_cache_key,omitempty"`
 }
 
 type PostOpenrouterProviderRequest struct {
