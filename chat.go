@@ -61,6 +61,14 @@ const (
 	ImageURLDetailAuto ImageURLDetail = "auto"
 )
 
+type ReasoningEffort string
+
+const (
+	ReasoningEffortHigh   ReasoningEffort = "high"
+	ReasoningEffortMedium ReasoningEffort = "medium"
+	ReasoningEffortLow    ReasoningEffort = "low"
+)
+
 type ChatMessageImageURL struct {
 	URL    string         `json:"url,omitempty"`
 	Detail ImageURLDetail `json:"detail,omitempty"`
@@ -220,6 +228,8 @@ type ChatCompletionRequest struct {
 	// Options for streaming response. Only set this when you set stream: true.
 	StreamOptions *StreamOptions `json:"stream_options,omitempty"`
 
+	ReasoningEffort ReasoningEffort `json:"reasoning_effort,omitempty"` // Can be "high", "medium", or "low" (OpenAI-style)
+
 	TopK              int32   `json:"top_k,omitempty"`
 	RepetitionPenalty float64 `json:"repetition_penalty,omitempty"`
 
@@ -243,8 +253,8 @@ type PostOpenrouterProviderRequest struct {
 // context : https://openrouter.ai/docs/use-cases/reasoning-tokens
 type PostOpenrouterReasoningRequest struct {
 	// One of the following (not both):
-	Effort    string `json:"effort,omitempty"`     // Can be "high", "medium", or "low" (OpenAI-style)
-	MaxTokens int    `json:"max_tokens,omitempty"` // Specific token limit (Anthropic-style)
+	Effort    ReasoningEffort `json:"effort,omitempty"`     // Can be "high", "medium", or "low" (OpenAI-style)
+	MaxTokens int             `json:"max_tokens,omitempty"` // Specific token limit (Anthropic-style)
 
 	// Optional: Default is false. All models support this.
 	Exclude bool `json:"exclude"` // // Set to true to exclude reasoning tokens from response

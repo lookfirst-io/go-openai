@@ -146,8 +146,9 @@ type CompletionRequest struct {
 	LogitBias map[string]int `json:"logit_bias,omitempty"`
 	User      string         `json:"user,omitempty"`
 
-	TopK              int32   `json:"top_k,omitempty"`
-	RepetitionPenalty float64 `json:"repetition_penalty,omitempty"`
+	TopK              int32           `json:"top_k,omitempty"`
+	RepetitionPenalty float64         `json:"repetition_penalty,omitempty"`
+	ReasoningEffort   ReasoningEffort `json:"reasoning_effort,omitempty"` // Can be "high", "medium", or "low" (OpenAI-style)
 
 	Provider *PostOpenrouterProviderRequest `json:"provider,omitempty"`
 
