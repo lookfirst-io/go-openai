@@ -225,8 +225,8 @@ type ChatCompletionRequest struct {
 
 	Provider *PostOpenrouterProviderRequest `json:"provider,omitempty"`
 
-	IncludeReasoning bool                            `json:"include_reasoning,omitempty"` // Whether to include reasoning in the response for OpenRouter
-	Reasoning        *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
+	IncludeReasoning bool              `json:"include_reasoning,omitempty"` // Whether to include reasoning in the response for OpenRouter
+	Reasoning        *ReasoningRequest `json:"reasoning,omitempty"`         // Can be PostOpenrouterReasoningRequest or a simple map like {"effort": "medium"} for OpenAI
 }
 
 type PostOpenrouterProviderRequest struct {
@@ -251,6 +251,50 @@ type PostOpenrouterReasoningRequest struct {
 
 	// Or enable reasoning with the default parameters:
 	Enabled bool `json:"enabled"` // Default: inferred from `effort` or `max_tokens`
+}
+
+// ToReasoningRequest converts PostOpenrouterReasoningRequest to ReasoningRequest for use in API requests.
+func (r *PostOpenrouterReasoningRequest) ToReasoningRequest() *ReasoningRequest {
+	return NewReasoningRequestFromStruct(r)
+}
+
+// ReasoningRequest can be either PostOpenrouterReasoningRequest or a simple map like {"effort": "medium"} for OpenAI.
+// It implements json.Marshaler and json.Unmarshaler to handle both formats.
+type ReasoningRequest struct {
+	value any // *PostOpenrouterReasoningRequest or map[string]interface{}
+}
+
+// NewReasoningRequestFromStruct creates a ReasoningRequest from PostOpenrouterReasoningRequest.
+func NewReasoningRequestFromStruct(req *PostOpenrouterReasoningRequest) *ReasoningRequest {
+	return &ReasoningRequest{value: req}
+}
+
+// NewReasoningRequestFromMap creates a ReasoningRequest from a simple map like {"effort": "medium"}.
+func NewReasoningRequestFromMap(m map[string]any) *ReasoningRequest {
+	return &ReasoningRequest{value: m}
+}
+
+// MarshalJSON implements json.Marshaler.
+func (r *ReasoningRequest) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.value)
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+// It tries to unmarshal as PostOpenrouterReasoningRequest first, then falls back to map[string]interface{}.
+func (r *ReasoningRequest) UnmarshalJSON(data []byte) error {
+	// Try PostOpenrouterReasoningRequest first
+	var structReq PostOpenrouterReasoningRequest
+	if err := json.Unmarshal(data, &structReq); err == nil {
+		r.value = &structReq
+		return nil
+	}
+	// Fall back to map
+	var mapReq map[string]any
+	if err := json.Unmarshal(data, &mapReq); err != nil {
+		return err
+	}
+	r.value = mapReq
+	return nil
 }
 
 type StreamOptions struct {

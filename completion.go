@@ -151,8 +151,8 @@ type CompletionRequest struct {
 
 	Provider *PostOpenrouterProviderRequest `json:"provider,omitempty"`
 
-	IncludeReasoning bool                            `json:"include_reasoning,omitempty"` // Whether to include reasoning in the response for OpenRouter
-	Reasoning        *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
+	IncludeReasoning bool              `json:"include_reasoning,omitempty"` // Whether to include reasoning in the response for OpenRouter
+	Reasoning        *ReasoningRequest `json:"reasoning,omitempty"`         // Can be PostOpenrouterReasoningRequest or a simple map like {"effort": "medium"} for OpenAI
 }
 
 // CompletionChoice represents one of possible completions.
