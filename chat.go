@@ -357,7 +357,7 @@ type PostOpenrouterProviderRequest struct {
 }
 
 type PostAlibabaCloudExtraBody struct {
-	EnableThinking bool `json:"enable_thinking,omitempty"`
+	EnableThinking bool `json:"enable_thinking"`
 }
 
 // context : https://openrouter.ai/docs/use-cases/reasoning-tokens
