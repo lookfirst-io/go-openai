@@ -327,7 +327,7 @@ type ChatCompletionRequest struct {
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 
-	ExtraBody PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
+	ExtraBody *PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
 }
 
 type PostOpenrouterProviderRequest struct {

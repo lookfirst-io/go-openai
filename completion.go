@@ -229,7 +229,7 @@ type CompletionRequest struct {
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 
-	ExtraBody PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
+	ExtraBody *PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
 }
 
 // CompletionChoice represents one of possible completions.
