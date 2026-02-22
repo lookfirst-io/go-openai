@@ -326,6 +326,8 @@ type ChatCompletionRequest struct {
 	IncludeReasoning bool `json:"include_reasoning,omitempty"`
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
+
+	ExtraBody PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
 }
 
 type PostOpenrouterProviderRequest struct {
@@ -352,6 +354,10 @@ type PostOpenrouterProviderRequest struct {
 
 	// List of provider slugs to allow for this request.
 	Only []string `json:"only,omitempty"`
+}
+
+type PostAlibabaCloudExtraBody struct {
+	EnableThinking bool `json:"enable_thinking,omitempty"`
 }
 
 // context : https://openrouter.ai/docs/use-cases/reasoning-tokens
