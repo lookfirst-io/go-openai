@@ -191,6 +191,8 @@ func sendRequestStream[T streamable](client *Client, req *http.Request) (*stream
 		errAccumulator:     utils.NewErrorAccumulator(),
 		unmarshaler:        &utils.JSONUnmarshaler{},
 		httpHeader:         httpHeader(resp.Header),
+		apiType:            client.config.APIType,
+		anthropicCreated:   0,
 	}, nil
 }
 
@@ -201,6 +203,7 @@ func (c *Client) setCommonHeaders(req *http.Request) {
 		req.Header.Set(AzureAPIKeyHeader, c.config.authToken)
 	case APITypeAnthropic:
 		// https://docs.anthropic.com/en/api/versioning
+		req.Header.Set("x-api-key", c.config.authToken)
 		req.Header.Set("anthropic-version", c.config.APIVersion)
 	case APITypeOpenAI, APITypeAzureAD:
 		fallthrough

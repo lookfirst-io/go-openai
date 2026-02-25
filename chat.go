@@ -516,9 +516,9 @@ func (c *Client) CreateChatCompletion(
 		return
 	}
 
-	// Use Anthropic's /messages endpoint for Azure Anthropic API type
+	// Use Anthropic's /messages endpoint for Anthropic API types
 	urlSuffix := chatCompletionsSuffix
-	if c.config.APIType == APITypeAzureAnthropic {
+	if c.config.APIType == APITypeAzureAnthropic || c.config.APIType == APITypeAnthropic {
 		urlSuffix = anthropicMessagesSuffix
 	}
 
