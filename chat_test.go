@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/lookfirst-io/go-openai"
+	"github.com/lookfirst-io/go-openai/internal/test"
 	"github.com/lookfirst-io/go-openai/internal/test/checks"
 	"github.com/sashabaranov/go-openai/jsonschema"
 )
@@ -1083,5 +1084,113 @@ func TestChatCompletionRequest_UnmarshalJSON(t *testing.T) {
 				t.Errorf("UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+func TestAzureAnthropicChatCompletionUsesMessagesEndpoint(t *testing.T) {
+	// Test that Azure Anthropic API type uses /v1/messages endpoint
+	server := test.NewTestServer()
+	ts := server.OpenAITestServer()
+	ts.Start()
+	defer ts.Close()
+
+	var requestPath string
+	server.RegisterHandler("/v1/messages", func(w http.ResponseWriter, r *http.Request) {
+		requestPath = r.URL.Path
+		handleChatCompletionEndpoint(w, r)
+	})
+
+	config := openai.DefaultAzureAnthropicConfig(test.GetTestToken(), ts.URL+"/v1")
+	client := openai.NewClientWithConfig(config)
+
+	req := openai.ChatCompletionRequest{
+		Model: "claude-3-5-sonnet-20241022",
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "Hello!",
+			},
+		},
+		MaxTokens: 100,
+	}
+
+	resp, err := client.CreateChatCompletion(context.Background(), req)
+	checks.NoError(t, err, "CreateChatCompletion error")
+
+	if requestPath != "/v1/messages" {
+		t.Fatalf("Expected request to /v1/messages but got %s", requestPath)
+	}
+
+	if len(resp.Choices) == 0 {
+		t.Fatal("Expected at least one choice in response")
+	}
+}
+
+func TestAzureAnthropicChatCompletionStreamUsesMessagesEndpoint(t *testing.T) {
+	// Test that Azure Anthropic API type uses /v1/messages endpoint for streaming
+	server := test.NewTestServer()
+	ts := server.OpenAITestServer()
+	ts.Start()
+	defer ts.Close()
+
+	var requestPath string
+	server.RegisterHandler("/v1/messages", func(w http.ResponseWriter, r *http.Request) {
+		requestPath = r.URL.Path
+		w.Header().Set("Content-Type", "text/event-stream")
+
+		dataBytes := []byte{}
+		dataBytes = append(dataBytes, []byte("event: message\n")...)
+		data := `{"id":"msg_1","object":"chat.completion.chunk","created":1234567890,"model":"claude-3-5-sonnet-20241022","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}`
+		dataBytes = append(dataBytes, []byte("data: "+data+"\n\n")...)
+
+		dataBytes = append(dataBytes, []byte("event: message\n")...)
+		data = `{"id":"msg_2","object":"chat.completion.chunk","created":1234567890,"model":"claude-3-5-sonnet-20241022","choices":[{"index":0,"delta":{"content":" from Azure Anthropic!"},"finish_reason":"stop"}]}`
+		dataBytes = append(dataBytes, []byte("data: "+data+"\n\n")...)
+
+		dataBytes = append(dataBytes, []byte("event: done\n")...)
+		dataBytes = append(dataBytes, []byte("data: [DONE]\n\n")...)
+
+		_, err := w.Write(dataBytes)
+		checks.NoError(t, err, "Write error")
+	})
+
+	config := openai.DefaultAzureAnthropicConfig(test.GetTestToken(), ts.URL+"/v1")
+	client := openai.NewClientWithConfig(config)
+
+	req := openai.ChatCompletionRequest{
+		Model: "claude-3-5-sonnet-20241022",
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "Hello!",
+			},
+		},
+		MaxTokens: 100,
+	}
+
+	stream, err := client.CreateChatCompletionStream(context.Background(), req)
+	checks.NoError(t, err, "CreateChatCompletionStream error")
+	defer stream.Close()
+
+	if requestPath != "/v1/messages" {
+		t.Fatalf("Expected request to /v1/messages but got %s", requestPath)
+	}
+
+	// Read the stream
+	receivedContent := ""
+	for {
+		response, streamErr := stream.Recv()
+		if errors.Is(streamErr, io.EOF) {
+			break
+		}
+		checks.NoError(t, streamErr, "stream.Recv error")
+		if len(response.Choices) > 0 {
+			receivedContent += response.Choices[0].Delta.Content
+		}
+	}
+
+	expectedContent := "Hello from Azure Anthropic!"
+	if receivedContent != expectedContent {
+		t.Fatalf("Expected content '%s', got '%s'", expectedContent, receivedContent)
 	}
 }

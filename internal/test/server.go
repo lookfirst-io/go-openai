@@ -48,7 +48,9 @@ func (ts *ServerTest) OpenAITestServer() *httptest.Server {
 		log.Printf("received a %s request at path %q\n", r.Method, r.URL.Path)
 
 		// check auth
-		if r.Header.Get("Authorization") != "Bearer "+GetTestToken() && r.Header.Get("api-key") != GetTestToken() {
+		if r.Header.Get("Authorization") != "Bearer "+GetTestToken() &&
+			r.Header.Get("api-key") != GetTestToken() &&
+			r.Header.Get("x-api-key") != GetTestToken() {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}

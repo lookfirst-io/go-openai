@@ -20,8 +20,8 @@ const (
 )
 
 const (
-	chatCompletionsSuffix           = "/chat/completions"
-	anthropicMessagesSuffix         = "/messages"
+	chatCompletionsSuffix   = "/chat/completions"
+	anthropicMessagesSuffix = "/messages"
 )
 
 var (
@@ -515,9 +515,9 @@ func (c *Client) CreateChatCompletion(
 		return
 	}
 
-	// Use Anthropic's /messages endpoint for Anthropic API type
+	// Use Anthropic's /messages endpoint for Azure Anthropic API type
 	urlSuffix := chatCompletionsSuffix
-	if c.config.APIType == APITypeAnthropic {
+	if c.config.APIType == APITypeAzureAnthropic {
 		urlSuffix = anthropicMessagesSuffix
 	}
 

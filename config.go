@@ -23,6 +23,7 @@ const (
 	APITypeAzureAD         APIType = "AZURE_AD"
 	APITypeCloudflareAzure APIType = "CLOUDFLARE_AZURE"
 	APITypeAnthropic       APIType = "ANTHROPIC"
+	APITypeAzureAnthropic  APIType = "AZURE_ANTHROPIC"
 )
 
 const AzureAPIKeyHeader = "api-key"
@@ -88,6 +89,23 @@ func DefaultAnthropicConfig(apiKey, baseURL string) ClientConfig {
 		BaseURL:    baseURL,
 		OrgID:      "",
 		APIType:    APITypeAnthropic,
+		APIVersion: AnthropicAPIVersion,
+
+		HTTPClient: &http.Client{},
+
+		EmptyMessagesLimit: defaultEmptyMessagesLimit,
+	}
+}
+
+func DefaultAzureAnthropicConfig(apiKey, baseURL string) ClientConfig {
+	if baseURL == "" {
+		baseURL = "https://akhaz-mhfdc0yy-eastus2.services.ai.azure.com/anthropic/v1"
+	}
+	return ClientConfig{
+		authToken:  apiKey,
+		BaseURL:    baseURL,
+		OrgID:      "",
+		APIType:    APITypeAzureAnthropic,
 		APIVersion: AnthropicAPIVersion,
 
 		HTTPClient: &http.Client{},
