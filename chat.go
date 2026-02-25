@@ -275,7 +275,7 @@ type ChatCompletionRequest struct {
 	TopP                float32                       `json:"top_p,omitempty"`
 	MinP                float32                       `json:"min_p,omitempty"`
 	TopK                int32                         `json:"top_k,omitempty"`
-	RepetitionPenalty   float64                       `json:"repetition_penalty,omitempty"`
+	RepetitionPenalty   *float64                      `json:"repetition_penalty,omitempty"`
 	N                   int                           `json:"n,omitempty"`
 	Stream              bool                          `json:"stream,omitempty"`
 	Stop                []string                      `json:"stop,omitempty"`
