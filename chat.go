@@ -19,7 +19,10 @@ const (
 	ChatMessageRoleDeveloper = "developer"
 )
 
-const chatCompletionsSuffix = "/chat/completions"
+const (
+	chatCompletionsSuffix           = "/chat/completions"
+	anthropicMessagesSuffix         = "/messages"
+)
 
 var (
 	ErrChatCompletionInvalidModel       = errors.New("this model is not supported with this method, please use CreateCompletion client method instead") //nolint:lll
@@ -512,7 +515,12 @@ func (c *Client) CreateChatCompletion(
 		return
 	}
 
+	// Use Anthropic's /messages endpoint for Anthropic API type
 	urlSuffix := chatCompletionsSuffix
+	if c.config.APIType == APITypeAnthropic {
+		urlSuffix = anthropicMessagesSuffix
+	}
+
 	if !checkEndpointSupportsModel(urlSuffix, request.Model) {
 		err = ErrChatCompletionInvalidModel
 		return
