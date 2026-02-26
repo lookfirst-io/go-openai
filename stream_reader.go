@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"time"
 
 	utils "github.com/lookfirst-io/go-openai/internal"
 )
@@ -30,6 +31,13 @@ type streamReader[T streamable] struct {
 	unmarshaler    utils.Unmarshaler
 
 	httpHeader
+
+	apiType APIType
+
+	// For Anthropic stream conversion
+	anthropicMessageID string
+	anthropicModel     string
+	anthropicCreated   int64
 }
 
 func (stream *streamReader[T]) Recv() (response T, err error) {
@@ -38,11 +46,66 @@ func (stream *streamReader[T]) Recv() (response T, err error) {
 		return
 	}
 
+	// Check if we need to convert from Anthropic format
+	if stream.apiType == APITypeAzureAnthropic || stream.apiType == APITypeAnthropic {
+		// Try to parse as Anthropic event first
+		var anthropicEvent AnthropicStreamEvent
+		if parseErr := stream.unmarshaler.Unmarshal(rawLine, &anthropicEvent); parseErr == nil && anthropicEvent.Type != "" {
+			// Successfully parsed as Anthropic event with valid type, convert to OpenAI format
+			converted := stream.convertAnthropicEvent(&anthropicEvent)
+
+			// Type assert and return
+			if openAIResp, ok := any(converted).(T); ok {
+				return openAIResp, nil
+			}
+		}
+		// If parsing as Anthropic failed or type is empty, fall through to OpenAI parsing
+	}
+
+	// Default: parse as OpenAI format
+
 	err = stream.unmarshaler.Unmarshal(rawLine, &response)
 	if err != nil {
 		return
 	}
 	return response, nil
+}
+
+func (stream *streamReader[T]) convertAnthropicEvent(event *AnthropicStreamEvent) T {
+	var zero T
+
+	// Update state from message_start event
+	if event.Type == AnthropicEventMessageStart && event.Message != nil {
+		stream.anthropicMessageID = event.Message.ID
+		stream.anthropicModel = event.Message.Model
+		// Use current Unix timestamp
+		if stream.anthropicCreated == 0 {
+			stream.anthropicCreated = getCurrentUnixTime()
+		}
+	}
+
+	// Ensure we have a timestamp set
+	if stream.anthropicCreated == 0 {
+		stream.anthropicCreated = getCurrentUnixTime()
+	}
+
+	// Convert the event to OpenAI format
+	converted := event.ConvertToOpenAIStreamResponse(
+		stream.anthropicMessageID,
+		stream.anthropicModel,
+		stream.anthropicCreated,
+	)
+
+	// Type assert and return
+	if result, ok := any(converted).(T); ok {
+		return result
+	}
+
+	return zero
+}
+
+func getCurrentUnixTime() int64 {
+	return time.Now().Unix()
 }
 
 func (stream *streamReader[T]) RecvRaw() ([]byte, error) {
