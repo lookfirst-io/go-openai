@@ -83,7 +83,12 @@ func (c *Client) CreateChatCompletionStream(
 	ctx context.Context,
 	request ChatCompletionRequest,
 ) (stream *ChatCompletionStream, err error) {
+	// Use Anthropic's /messages endpoint for Anthropic API types
 	urlSuffix := chatCompletionsSuffix
+	if c.config.APIType == APITypeAzureAnthropic || c.config.APIType == APITypeAnthropic {
+		urlSuffix = anthropicMessagesSuffix
+	}
+
 	if !checkEndpointSupportsModel(urlSuffix, request.Model) {
 		err = ErrChatCompletionInvalidModel
 		return

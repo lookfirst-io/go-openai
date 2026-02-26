@@ -19,7 +19,10 @@ const (
 	ChatMessageRoleDeveloper = "developer"
 )
 
-const chatCompletionsSuffix = "/chat/completions"
+const (
+	chatCompletionsSuffix   = "/chat/completions"
+	anthropicMessagesSuffix = "/messages"
+)
 
 var (
 	ErrChatCompletionInvalidModel       = errors.New("this model is not supported with this method, please use CreateCompletion client method instead") //nolint:lll
@@ -259,6 +262,7 @@ func (r *ChatCompletionResponseFormatJSONSchema) UnmarshalJSON(data []byte) erro
 type ChatCompletionRequest struct {
 	Model    string                  `json:"model"`
 	Messages []ChatCompletionMessage `json:"messages"`
+	System   string                  `json:"system,omitempty"`
 	// MaxTokens The maximum number of tokens that can be generated in the chat completion.
 	// This value can be used to control costs for text generated via API.
 	// This value is now deprecated in favor of max_completion_tokens, and is not compatible with o1 series models.
@@ -271,7 +275,7 @@ type ChatCompletionRequest struct {
 	TopP                float32                       `json:"top_p,omitempty"`
 	MinP                float32                       `json:"min_p,omitempty"`
 	TopK                int32                         `json:"top_k,omitempty"`
-	RepetitionPenalty   float64                       `json:"repetition_penalty,omitempty"`
+	RepetitionPenalty   *float64                      `json:"repetition_penalty,omitempty"`
 	N                   int                           `json:"n,omitempty"`
 	Stream              bool                          `json:"stream,omitempty"`
 	Stop                []string                      `json:"stop,omitempty"`
@@ -512,7 +516,12 @@ func (c *Client) CreateChatCompletion(
 		return
 	}
 
+	// Use Anthropic's /messages endpoint for Anthropic API types
 	urlSuffix := chatCompletionsSuffix
+	if c.config.APIType == APITypeAzureAnthropic || c.config.APIType == APITypeAnthropic {
+		urlSuffix = anthropicMessagesSuffix
+	}
+
 	if !checkEndpointSupportsModel(urlSuffix, request.Model) {
 		err = ErrChatCompletionInvalidModel
 		return
