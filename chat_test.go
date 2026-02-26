@@ -1140,11 +1140,15 @@ func TestAzureAnthropicChatCompletionStreamUsesMessagesEndpoint(t *testing.T) {
 
 		dataBytes := []byte{}
 		dataBytes = append(dataBytes, []byte("event: message\n")...)
-		data := `{"id":"msg_1","object":"chat.completion.chunk","created":1234567890,"model":"claude-3-5-sonnet-20241022","choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}`
+		data := `{"id":"msg_1","object":"chat.completion.chunk","created":1234567890,` +
+			`"model":"claude-3-5-sonnet-20241022",` +
+			`"choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}]}`
 		dataBytes = append(dataBytes, []byte("data: "+data+"\n\n")...)
 
 		dataBytes = append(dataBytes, []byte("event: message\n")...)
-		data = `{"id":"msg_2","object":"chat.completion.chunk","created":1234567890,"model":"claude-3-5-sonnet-20241022","choices":[{"index":0,"delta":{"content":" from Azure Anthropic!"},"finish_reason":"stop"}]}`
+		data = `{"id":"msg_2","object":"chat.completion.chunk","created":1234567890,` +
+			`"model":"claude-3-5-sonnet-20241022",` +
+			`"choices":[{"index":0,"delta":{"content":" from Azure Anthropic!"},"finish_reason":"stop"}]}`
 		dataBytes = append(dataBytes, []byte("data: "+data+"\n\n")...)
 
 		dataBytes = append(dataBytes, []byte("event: done\n")...)

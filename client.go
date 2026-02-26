@@ -191,8 +191,6 @@ func sendRequestStream[T streamable](client *Client, req *http.Request) (*stream
 		errAccumulator:     utils.NewErrorAccumulator(),
 		unmarshaler:        &utils.JSONUnmarshaler{},
 		httpHeader:         httpHeader(resp.Header),
-		apiType:            client.config.APIType,
-		anthropicCreated:   0,
 	}, nil
 }
 

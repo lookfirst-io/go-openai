@@ -1,8 +1,10 @@
-package openai
+package openai_test
 
 import (
 	"encoding/json"
 	"testing"
+
+	openai "github.com/lookfirst-io/go-openai"
 )
 
 func TestAnthropicStreamEventParsing(t *testing.T) {
@@ -16,14 +18,14 @@ func TestAnthropicStreamEventParsing(t *testing.T) {
 		}
 	}`
 
-	var event AnthropicStreamEvent
+	var event openai.AnthropicStreamEvent
 	err := json.Unmarshal([]byte(jsonData), &event)
 	if err != nil {
 		t.Fatalf("Failed to parse Anthropic event: %v", err)
 	}
 
-	if event.Type != AnthropicEventContentBlockDelta {
-		t.Errorf("Expected type %s, got %s", AnthropicEventContentBlockDelta, event.Type)
+	if event.Type != openai.AnthropicEventContentBlockDelta {
+		t.Errorf("Expected type %s, got %s", openai.AnthropicEventContentBlockDelta, event.Type)
 	}
 
 	if event.Index != 0 {
@@ -41,113 +43,122 @@ func TestAnthropicStreamEventParsing(t *testing.T) {
 }
 
 func TestAnthropicToOpenAIConversion(t *testing.T) {
-	// Test message_start event
-	t.Run("message_start", func(t *testing.T) {
-		event := AnthropicStreamEvent{
-			Type: AnthropicEventMessageStart,
-			Message: &AnthropicMessage{
-				ID:    "msg_123",
-				Type:  "message",
-				Role:  "assistant",
-				Model: "claude-3-opus-20240229",
-				Usage: &AnthropicUsage{
-					InputTokens:  10,
-					OutputTokens: 0,
-				},
+	t.Run("message_start", testAnthropicMessageStart)
+	t.Run("content_block_delta", testAnthropicContentBlockDelta)
+	t.Run("message_delta", testAnthropicMessageDelta)
+	t.Run("message_stop", testAnthropicMessageStop)
+}
+
+func testAnthropicMessageStart(t *testing.T) {
+	t.Helper()
+
+	event := openai.AnthropicStreamEvent{
+		Type: openai.AnthropicEventMessageStart,
+		Message: &openai.AnthropicMessage{
+			ID:    "msg_123",
+			Type:  "message",
+			Role:  "assistant",
+			Model: "claude-3-opus-20240229",
+			Usage: &openai.AnthropicUsage{
+				InputTokens:  10,
+				OutputTokens: 0,
 			},
-		}
+		},
+	}
 
-		response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
+	response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
 
-		if response.ID != "msg_123" {
-			t.Errorf("Expected ID msg_123, got %s", response.ID)
-		}
+	if response.ID != "msg_123" {
+		t.Errorf("Expected ID msg_123, got %s", response.ID)
+	}
 
-		if response.Model != "claude-3-opus-20240229" {
-			t.Errorf("Expected model claude-3-opus-20240229, got %s", response.Model)
-		}
+	if response.Model != "claude-3-opus-20240229" {
+		t.Errorf("Expected model claude-3-opus-20240229, got %s", response.Model)
+	}
 
-		if len(response.Choices) != 1 {
-			t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
-		}
+	if len(response.Choices) != 1 {
+		t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
+	}
 
-		if response.Choices[0].Delta.Role != "assistant" {
-			t.Errorf("Expected role assistant, got %s", response.Choices[0].Delta.Role)
-		}
-	})
+	if response.Choices[0].Delta.Role != "assistant" {
+		t.Errorf("Expected role assistant, got %s", response.Choices[0].Delta.Role)
+	}
+}
 
-	// Test content_block_delta event
-	t.Run("content_block_delta", func(t *testing.T) {
-		event := AnthropicStreamEvent{
-			Type:  AnthropicEventContentBlockDelta,
-			Index: 0,
-			Delta: &AnthropicDelta{
-				Type: "text_delta",
-				Text: " attractions in Seattle:\n\n1. **",
-			},
-		}
+func testAnthropicContentBlockDelta(t *testing.T) {
+	t.Helper()
 
-		response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
+	event := openai.AnthropicStreamEvent{
+		Type:  openai.AnthropicEventContentBlockDelta,
+		Index: 0,
+		Delta: &openai.AnthropicDelta{
+			Type: "text_delta",
+			Text: " attractions in Seattle:\n\n1. **",
+		},
+	}
 
-		if len(response.Choices) != 1 {
-			t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
-		}
+	response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
 
-		expectedText := " attractions in Seattle:\n\n1. **"
-		if response.Choices[0].Delta.Content != expectedText {
-			t.Errorf("Expected content %q, got %q", expectedText, response.Choices[0].Delta.Content)
-		}
+	if len(response.Choices) != 1 {
+		t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
+	}
 
-		if response.Choices[0].Index != 0 {
-			t.Errorf("Expected index 0, got %d", response.Choices[0].Index)
-		}
-	})
+	expectedText := " attractions in Seattle:\n\n1. **"
+	if response.Choices[0].Delta.Content != expectedText {
+		t.Errorf("Expected content %q, got %q", expectedText, response.Choices[0].Delta.Content)
+	}
 
-	// Test message_delta event with stop reason
-	t.Run("message_delta", func(t *testing.T) {
-		event := AnthropicStreamEvent{
-			Type: AnthropicEventMessageDelta,
-			Delta: &AnthropicDelta{
-				StopReason: "end_turn",
-			},
-			Usage: &AnthropicUsageDelta{
-				OutputTokens: 150,
-			},
-		}
+	if response.Choices[0].Index != 0 {
+		t.Errorf("Expected index 0, got %d", response.Choices[0].Index)
+	}
+}
 
-		response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
+func testAnthropicMessageDelta(t *testing.T) {
+	t.Helper()
 
-		if len(response.Choices) != 1 {
-			t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
-		}
+	event := openai.AnthropicStreamEvent{
+		Type: openai.AnthropicEventMessageDelta,
+		Delta: &openai.AnthropicDelta{
+			StopReason: "end_turn",
+		},
+		Usage: &openai.AnthropicUsageDelta{
+			OutputTokens: 150,
+		},
+	}
 
-		if response.Choices[0].FinishReason != "end_turn" {
-			t.Errorf("Expected finish_reason end_turn, got %s", response.Choices[0].FinishReason)
-		}
+	response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
 
-		if response.Usage == nil {
-			t.Fatal("Usage should not be nil")
-		}
+	if len(response.Choices) != 1 {
+		t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
+	}
 
-		if response.Usage.CompletionTokens != 150 {
-			t.Errorf("Expected 150 completion tokens, got %d", response.Usage.CompletionTokens)
-		}
-	})
+	if response.Choices[0].FinishReason != "end_turn" {
+		t.Errorf("Expected finish_reason end_turn, got %s", response.Choices[0].FinishReason)
+	}
 
-	// Test message_stop event
-	t.Run("message_stop", func(t *testing.T) {
-		event := AnthropicStreamEvent{
-			Type: AnthropicEventMessageStop,
-		}
+	if response.Usage == nil {
+		t.Fatal("Usage should not be nil")
+	}
 
-		response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
+	if response.Usage.CompletionTokens != 150 {
+		t.Errorf("Expected 150 completion tokens, got %d", response.Usage.CompletionTokens)
+	}
+}
 
-		if len(response.Choices) != 1 {
-			t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
-		}
+func testAnthropicMessageStop(t *testing.T) {
+	t.Helper()
 
-		if response.Choices[0].FinishReason != FinishReasonStop {
-			t.Errorf("Expected finish_reason stop, got %s", response.Choices[0].FinishReason)
-		}
-	})
+	event := openai.AnthropicStreamEvent{
+		Type: openai.AnthropicEventMessageStop,
+	}
+
+	response := event.ConvertToOpenAIStreamResponse("msg_123", "claude-3-opus-20240229", 1234567890)
+
+	if len(response.Choices) != 1 {
+		t.Fatalf("Expected 1 choice, got %d", len(response.Choices))
+	}
+
+	if response.Choices[0].FinishReason != openai.FinishReasonStop {
+		t.Errorf("Expected finish_reason stop, got %s", response.Choices[0].FinishReason)
+	}
 }
