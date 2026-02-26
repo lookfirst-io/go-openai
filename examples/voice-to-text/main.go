@@ -14,7 +14,6 @@ func main() {
 		fmt.Println("please provide a filename to convert to text")
 		return
 	}
-	//nolint:gosec // G703: CLI tool intentionally reads user-supplied path
 	if _, err := os.Stat(os.Args[1]); errors.Is(err, os.ErrNotExist) {
 		fmt.Printf("file %s does not exist\n", os.Args[1])
 		return
