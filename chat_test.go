@@ -1126,6 +1126,55 @@ func TestAzureAnthropicChatCompletionUsesMessagesEndpoint(t *testing.T) {
 	}
 }
 
+// TestChatCompletionsWithExtraHeaders Tests that custom headers are properly sent with the request.
+func TestChatCompletionsWithExtraHeaders(t *testing.T) {
+	client, server, teardown := setupOpenAITestServer()
+	defer teardown()
+
+	const customHeader1 = "X-Custom-Header-1"
+	const customHeader1Value = "custom-value-1"
+	const customHeader2 = "X-Custom-Header-2"
+	const customHeader2Value = "custom-value-2"
+
+	// Track whether headers were received
+	var receivedHeader1, receivedHeader2 bool
+
+	server.RegisterHandler("/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
+		// Check if custom headers are present in the request
+		if r.Header.Get(customHeader1) == customHeader1Value {
+			receivedHeader1 = true
+		}
+		if r.Header.Get(customHeader2) == customHeader2Value {
+			receivedHeader2 = true
+		}
+		handleChatCompletionEndpoint(w, r)
+	})
+
+	extraHeaders := http.Header{}
+	extraHeaders.Add(customHeader1, customHeader1Value)
+	extraHeaders.Add(customHeader2, customHeader2Value)
+
+	_, err := client.CreateChatCompletion(context.Background(), openai.ChatCompletionRequest{
+		MaxTokens: 5,
+		Model:     openai.GPT3Dot5Turbo,
+		Messages: []openai.ChatCompletionMessage{
+			{
+				Role:    openai.ChatMessageRoleUser,
+				Content: "Hello!",
+			},
+		},
+		ExtraHeaders: extraHeaders,
+	})
+	checks.NoError(t, err, "CreateChatCompletion error")
+
+	if !receivedHeader1 {
+		t.Errorf("expected custom header %s to be received", customHeader1)
+	}
+	if !receivedHeader2 {
+		t.Errorf("expected custom header %s to be received", customHeader2)
+	}
+}
+
 func TestAzureAnthropicChatCompletionStreamUsesMessagesEndpoint(t *testing.T) {
 	// Test that Azure Anthropic API type uses /v1/messages endpoint for streaming
 	server := test.NewTestServer()

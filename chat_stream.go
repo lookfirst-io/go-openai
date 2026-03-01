@@ -100,11 +100,19 @@ func (c *Client) CreateChatCompletionStream(
 		return
 	}
 
+	requestOptions := []requestOption{
+		withBody(request),
+	}
+
+	if request.ExtraHeaders != nil {
+		requestOptions = append(requestOptions, withExtraHeaders(request.ExtraHeaders))
+	}
+
 	req, err := c.newRequest(
 		ctx,
 		http.MethodPost,
 		c.fullURL(urlSuffix, withModel(request.Model)),
-		withBody(request),
+		requestOptions...,
 	)
 	if err != nil {
 		return nil, err
