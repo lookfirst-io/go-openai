@@ -332,6 +332,11 @@ type ChatCompletionRequest struct {
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 
 	ExtraBody *PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
+
+	// ExtraHeaders allows you to add custom HTTP headers to the request.
+	// These headers will be sent along with the standard headers.
+	// Note: This field is not sent in the JSON body of the request.
+	ExtraHeaders http.Header `json:"-"`
 }
 
 type PostOpenrouterProviderRequest struct {
@@ -532,11 +537,19 @@ func (c *Client) CreateChatCompletion(
 		return
 	}
 
+	requestOptions := []requestOption{
+		withBody(request),
+	}
+
+	if request.ExtraHeaders != nil {
+		requestOptions = append(requestOptions, withExtraHeaders(request.ExtraHeaders))
+	}
+
 	req, err := c.newRequest(
 		ctx,
 		http.MethodPost,
 		c.fullURL(urlSuffix, withModel(request.Model)),
-		withBody(request),
+		requestOptions...,
 	)
 	if err != nil {
 		return
