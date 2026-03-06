@@ -331,7 +331,10 @@ type ChatCompletionRequest struct {
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 
-	ExtraBody *PostAlibabaCloudExtraBody `json:"extra_body,omitempty"`
+	// ExtraBody allows you to pass additional custom fields to the request body.
+	// This can include provider-specific parameters like Alibaba Cloud's enable_thinking,
+	// or other custom fields like chat_template_kwargs.
+	ExtraBody map[string]any `json:"extra_body,omitempty"`
 
 	// ExtraHeaders allows you to add custom HTTP headers to the request.
 	// These headers will be sent along with the standard headers.
@@ -363,10 +366,6 @@ type PostOpenrouterProviderRequest struct {
 
 	// List of provider slugs to allow for this request.
 	Only []string `json:"only,omitempty"`
-}
-
-type PostAlibabaCloudExtraBody struct {
-	EnableThinking bool `json:"enable_thinking"`
 }
 
 // context : https://openrouter.ai/docs/use-cases/reasoning-tokens
