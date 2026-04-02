@@ -331,6 +331,8 @@ type ChatCompletionRequest struct {
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 
+	EnableThinking *bool `json:"enable_thinking,omitempty"`
+
 	// ExtraBody allows you to pass additional custom fields to the request body.
 	// This can include provider-specific parameters like Alibaba Cloud's enable_thinking,
 	// or other custom fields like chat_template_kwargs.
