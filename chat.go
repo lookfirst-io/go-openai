@@ -333,6 +333,15 @@ type ChatCompletionRequest struct {
 
 	EnableThinking *bool `json:"enable_thinking,omitempty"`
 
+	// Thinking controls whether extended thinking/reasoning is enabled or disabled
+	// for models that support it (e.g. DeepSeek). Uses the OpenAI-compatible format:
+	// {"thinking": {"type": "enabled"}}. Omitted from the request when nil.
+	Thinking *ThinkingConfig `json:"thinking,omitempty"`
+
+	// OutputConfig specifies reasoning effort in the Anthropic-compatible format:
+	// {"output_config": {"effort": "high"}}. Omitted from the request when nil.
+	OutputConfig *OutputConfig `json:"output_config,omitempty"`
+
 	// ExtraBody allows you to pass additional custom fields to the request body.
 	// This can include provider-specific parameters like Alibaba Cloud's enable_thinking,
 	// or other custom fields like chat_template_kwargs.
@@ -343,6 +352,33 @@ type ChatCompletionRequest struct {
 	// Note: This field is not sent in the JSON body of the request.
 	ExtraHeaders http.Header `json:"-"`
 }
+
+// ThinkingType controls whether extended thinking/reasoning is enabled or disabled.
+type ThinkingType string
+
+const (
+	ThinkingTypeEnabled  ThinkingType = "enabled"
+	ThinkingTypeDisabled ThinkingType = "disabled"
+)
+
+// ThinkingConfig controls the thinking/reasoning mode for models that support it
+// (e.g. DeepSeek). Use the OpenAI-compatible format: {"thinking": {"type": "enabled"}}.
+type ThinkingConfig struct {
+	Type ThinkingType `json:"type"`
+}
+
+// OutputConfig controls reasoning effort in the Anthropic-compatible format:
+// {"output_config": {"effort": "high"}}.
+type OutputConfig struct {
+	Effort OutputEffort `json:"effort,omitempty"`
+}
+
+type OutputEffort string
+
+const (
+	OutputEffortHigh OutputEffort = "high"
+	OutputEffortMax  OutputEffort = "max"
+)
 
 type PostOpenrouterProviderRequest struct {
 	// Sort providers by price or throughput. (e.g. "price" or "throughput")
