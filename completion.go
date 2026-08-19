@@ -229,6 +229,11 @@ type CompletionRequest struct {
 
 	Reasoning *PostOpenrouterReasoningRequest `json:"reasoning,omitempty"`
 
+	// EnableThinking controls whether thinking mode is enabled for providers
+	// that support it (e.g. Alibaba Cloud DashScope qwen3). Sent at the request
+	// body root as "enable_thinking". Omitted from the request when nil.
+	EnableThinking *bool `json:"enable_thinking,omitempty"`
+
 	ExtraBody map[string]any `json:"extra_body,omitempty"`
 }
 
