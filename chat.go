@@ -342,6 +342,11 @@ type ChatCompletionRequest struct {
 	// {"output_config": {"effort": "high"}}. Omitted from the request when nil.
 	OutputConfig *OutputConfig `json:"output_config,omitempty"`
 
+	// PromptCacheKey routes requests that share a key to the same backend instance
+	// so its prompt (KV) cache can be reused, e.g. DeepInfra and OpenAI. Sent at the
+	// request body root as "prompt_cache_key". Omitted from the request when empty.
+	PromptCacheKey string `json:"prompt_cache_key,omitempty"`
+
 	// ExtraBody allows you to pass additional custom fields to the request body.
 	// This can include provider-specific parameters like Alibaba Cloud's enable_thinking,
 	// or other custom fields like chat_template_kwargs.

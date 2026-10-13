@@ -300,3 +300,34 @@ func TestCompletionWithGPT4oModels(t *testing.T) {
 		})
 	}
 }
+
+// TestPromptCacheKeyAtBodyRoot checks that prompt_cache_key is sent at the request
+// body root, where providers read it, and is left out when unset.
+func TestPromptCacheKeyAtBodyRoot(t *testing.T) {
+	const key = "0d5e2a8c-chat"
+
+	for name, req := range map[string]any{
+		"completion": openai.CompletionRequest{Model: "m", PromptCacheKey: key},
+		"chat":       openai.ChatCompletionRequest{Model: "m", PromptCacheKey: key},
+	} {
+		raw, err := json.Marshal(req)
+		checks.NoError(t, err, name)
+
+		var body map[string]any
+		checks.NoError(t, json.Unmarshal(raw, &body), name)
+		if body["prompt_cache_key"] != key {
+			t.Errorf("%s: prompt_cache_key = %v, want %q at body root", name, body["prompt_cache_key"], key)
+		}
+	}
+
+	for name, req := range map[string]any{
+		"completion": openai.CompletionRequest{Model: "m"},
+		"chat":       openai.ChatCompletionRequest{Model: "m"},
+	} {
+		raw, err := json.Marshal(req)
+		checks.NoError(t, err, name)
+		if strings.Contains(string(raw), "prompt_cache_key") {
+			t.Errorf("%s: prompt_cache_key should be omitted when empty: %s", name, raw)
+		}
+	}
+}

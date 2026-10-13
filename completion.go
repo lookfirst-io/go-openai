@@ -234,6 +234,11 @@ type CompletionRequest struct {
 	// body root as "enable_thinking". Omitted from the request when nil.
 	EnableThinking *bool `json:"enable_thinking,omitempty"`
 
+	// PromptCacheKey routes requests that share a key to the same backend instance
+	// so its prompt (KV) cache can be reused, e.g. DeepInfra and OpenAI. Sent at the
+	// request body root as "prompt_cache_key". Omitted from the request when empty.
+	PromptCacheKey string `json:"prompt_cache_key,omitempty"`
+
 	ExtraBody map[string]any `json:"extra_body,omitempty"`
 }
 
