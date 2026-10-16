@@ -1247,3 +1247,35 @@ func TestAzureAnthropicChatCompletionStreamUsesMessagesEndpoint(t *testing.T) {
 		t.Fatalf("Expected content '%s', got '%s'", expectedContent, receivedContent)
 	}
 }
+
+// TestCacheControlOnContentPart checks that a cache breakpoint is sent on the
+// content part, where Anthropic-compatible providers read it, and is left out
+// when unset.
+func TestCacheControlOnContentPart(t *testing.T) {
+	msg := openai.ChatCompletionMessage{
+		Role: openai.ChatMessageRoleSystem,
+		MultiContent: []openai.ChatMessagePart{
+			{Type: openai.ChatMessagePartTypeText, Text: "stable prefix",
+				CacheControl: &openai.CacheControl{Type: openai.CacheControlTypeEphemeral}},
+			{Type: openai.ChatMessagePartTypeText, Text: "no marker"},
+		},
+	}
+	raw, err := json.Marshal(msg)
+	checks.NoError(t, err)
+
+	want := `{"role":"system","content":[` +
+		`{"type":"text","text":"stable prefix","cache_control":{"type":"ephemeral"}},` +
+		`{"type":"text","text":"no marker"}]}`
+	if string(raw) != want {
+		t.Errorf("got %s\nwant %s", raw, want)
+	}
+
+	raw, err = json.Marshal(openai.ChatMessagePart{
+		Type: openai.ChatMessagePartTypeText, Text: "x",
+		CacheControl: &openai.CacheControl{Type: openai.CacheControlTypeEphemeral, TTL: "1h"},
+	})
+	checks.NoError(t, err)
+	if !strings.Contains(string(raw), `"cache_control":{"type":"ephemeral","ttl":"1h"}`) {
+		t.Errorf("ttl not sent: %s", raw)
+	}
+}
