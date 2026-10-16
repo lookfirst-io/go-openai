@@ -1279,3 +1279,23 @@ func TestCacheControlOnContentPart(t *testing.T) {
 		t.Errorf("ttl not sent: %s", raw)
 	}
 }
+
+// TestCacheReadInputTokens checks that a provider's cache_read_input_tokens is
+// decoded separately from cached_tokens, and is nil when not sent.
+func TestCacheReadInputTokens(t *testing.T) {
+	var novita openai.Usage
+	checks.NoError(t, json.Unmarshal([]byte(`{"prompt_tokens":2693,"prompt_tokens_details":`+
+		`{"cached_tokens":2679,"cache_read_input_tokens":0,"cache_creation_input_tokens":2679}}`), &novita))
+	if novita.PromptTokensDetails.CachedTokens != 2679 {
+		t.Errorf("cached_tokens = %d", novita.PromptTokensDetails.CachedTokens)
+	}
+	if got := novita.PromptTokensDetails.CacheReadInputTokens; got == nil || *got != 0 {
+		t.Errorf("cache_read_input_tokens = %v, want 0", got)
+	}
+
+	var other openai.Usage
+	checks.NoError(t, json.Unmarshal([]byte(`{"prompt_tokens":2669,"prompt_tokens_details":{"cached_tokens":2655}}`), &other))
+	if other.PromptTokensDetails.CacheReadInputTokens != nil {
+		t.Errorf("cache_read_input_tokens should be nil when not sent")
+	}
+}

@@ -23,4 +23,9 @@ type CompletionTokensDetails struct {
 type PromptTokensDetails struct {
 	AudioTokens  int `json:"audio_tokens"`
 	CachedTokens int `json:"cached_tokens"`
+	// CacheReadInputTokens is Anthropic's count of prompt tokens read from the
+	// cache, which some providers report next to CachedTokens. Novita's
+	// CachedTokens also counts cache writes, so this is the one to use for
+	// reads when present. Nil when the provider doesn't send it.
+	CacheReadInputTokens *int `json:"cache_read_input_tokens,omitempty"`
 }
