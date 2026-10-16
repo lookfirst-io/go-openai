@@ -95,6 +95,22 @@ type ChatMessagePart struct {
 	Type     ChatMessagePartType  `json:"type,omitempty"`
 	Text     string               `json:"text,omitempty"`
 	ImageURL *ChatMessageImageURL `json:"image_url,omitempty"`
+	// CacheControl marks the end of a cacheable prefix for providers that
+	// support Anthropic prompt caching through the OpenAI-compatible API
+	// (verified with OpenRouter, Novita and Siraya for Claude). Omitted from
+	// the request when nil.
+	CacheControl *CacheControl `json:"cache_control,omitempty"`
+}
+
+type CacheControlType string
+
+const CacheControlTypeEphemeral CacheControlType = "ephemeral"
+
+// CacheControl is Anthropic's cache breakpoint: {"type": "ephemeral"}, with an
+// optional TTL such as "1h" (the provider default is 5 minutes).
+type CacheControl struct {
+	Type CacheControlType `json:"type"`
+	TTL  string           `json:"ttl,omitempty"`
 }
 
 type ChatCompletionMessage struct {
