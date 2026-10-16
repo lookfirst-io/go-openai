@@ -1294,7 +1294,8 @@ func TestCacheReadInputTokens(t *testing.T) {
 	}
 
 	var other openai.Usage
-	checks.NoError(t, json.Unmarshal([]byte(`{"prompt_tokens":2669,"prompt_tokens_details":{"cached_tokens":2655}}`), &other))
+	checks.NoError(t, json.Unmarshal(
+		[]byte(`{"prompt_tokens":2669,"prompt_tokens_details":{"cached_tokens":2655}}`), &other))
 	if other.PromptTokensDetails.CacheReadInputTokens != nil {
 		t.Errorf("cache_read_input_tokens should be nil when not sent")
 	}
