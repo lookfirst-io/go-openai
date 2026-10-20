@@ -1300,3 +1300,27 @@ func TestCacheReadInputTokens(t *testing.T) {
 		t.Errorf("cache_read_input_tokens should be nil when not sent")
 	}
 }
+
+// TestCacheWriteTokens checks that both providers' names for cache-written
+// tokens decode, and are nil when not sent.
+func TestCacheWriteTokens(t *testing.T) {
+	var novita openai.Usage
+	checks.NoError(t, json.Unmarshal([]byte(`{"prompt_tokens_details":`+
+		`{"cached_tokens":2679,"cache_read_input_tokens":0,"cache_creation_input_tokens":2679}}`), &novita))
+	if got := novita.PromptTokensDetails.CacheCreationInputTokens; got == nil || *got != 2679 {
+		t.Errorf("cache_creation_input_tokens = %v, want 2679", got)
+	}
+	if novita.PromptTokensDetails.CacheWriteTokens != nil {
+		t.Errorf("cache_write_tokens should be nil when not sent")
+	}
+
+	var siraya openai.Usage
+	checks.NoError(t, json.Unmarshal([]byte(`{"prompt_tokens_details":`+
+		`{"cache_write_tokens":10689,"cached_tokens":0}}`), &siraya))
+	if got := siraya.PromptTokensDetails.CacheWriteTokens; got == nil || *got != 10689 {
+		t.Errorf("cache_write_tokens = %v, want 10689", got)
+	}
+	if siraya.PromptTokensDetails.CacheCreationInputTokens != nil {
+		t.Errorf("cache_creation_input_tokens should be nil when not sent")
+	}
+}
