@@ -28,4 +28,10 @@ type PromptTokensDetails struct {
 	// CachedTokens also counts cache writes, so this is the one to use for
 	// reads when present. Nil when the provider doesn't send it.
 	CacheReadInputTokens *int `json:"cache_read_input_tokens,omitempty"`
+	// CacheWriteTokens is the number of prompt tokens written to the cache, as
+	// reported by e.g. OpenRouter and Siraya. Nil when not sent.
+	CacheWriteTokens *int `json:"cache_write_tokens,omitempty"`
+	// CacheCreationInputTokens is Anthropic's name for the same count, as
+	// reported by e.g. Novita. Nil when not sent.
+	CacheCreationInputTokens *int `json:"cache_creation_input_tokens,omitempty"`
 }
