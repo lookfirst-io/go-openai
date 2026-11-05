@@ -380,12 +380,26 @@ type ThinkingType string
 const (
 	ThinkingTypeEnabled  ThinkingType = "enabled"
 	ThinkingTypeDisabled ThinkingType = "disabled"
+	// ThinkingTypeAdaptive lets the model decide how much to think (Anthropic-compatible models).
+	ThinkingTypeAdaptive ThinkingType = "adaptive"
+)
+
+// ThinkingDisplay controls whether thinking text is returned (Anthropic-compatible models).
+type ThinkingDisplay string
+
+const (
+	// ThinkingDisplaySummarized returns a summary of the model's thinking.
+	ThinkingDisplaySummarized ThinkingDisplay = "summarized"
+	// ThinkingDisplayOmitted returns no thinking text; some models default to this.
+	ThinkingDisplayOmitted ThinkingDisplay = "omitted"
 )
 
 // ThinkingConfig controls the thinking/reasoning mode for models that support it
 // (e.g. DeepSeek). Use the OpenAI-compatible format: {"thinking": {"type": "enabled"}}.
+// Anthropic-compatible models also accept {"thinking": {"type": "adaptive", "display": "summarized"}}.
 type ThinkingConfig struct {
-	Type ThinkingType `json:"type"`
+	Type    ThinkingType    `json:"type"`
+	Display ThinkingDisplay `json:"display,omitempty"`
 }
 
 // OutputConfig controls reasoning effort in the Anthropic-compatible format:
